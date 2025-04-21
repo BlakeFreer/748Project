@@ -1,3 +1,6 @@
 [submodule "free-spoken-digit-dataset"]
 	path = free-spoken-digit-dataset
 	url = https://github.com/Jakobovski/free-spoken-digit-dataset.git
+[submodule "libsndfile"]
+	path = libsndfile
+	url = https://github.com/libsndfile/libsndfile.git

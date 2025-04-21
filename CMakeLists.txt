@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
 
-add_executable(extract extract.cpp)
+add_library(resources)
 
 # Add the compiler's library and include paths to CMake search paths
 set(CMAKE_LIBRARY_PATH "${CMAKE_LIBRARY_PATH};${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES}")
@@ -31,4 +31,14 @@ else()
     message(FATAL_ERROR "FFTW was not found on your system!")
 endif()
 
-target_link_libraries(extract PUBLIC ${FFTW_LIB})
+target_link_libraries(resources PUBLIC ${FFTW_LIB})
+
+# libsndfile
+find_library(LIBSNDFILE NAMES libsndfile PATHS libsndfile/build)
+target_link_libraries(resources PUBLIC ${LIBSNDFILE})
+target_include_directories(resources PUBLIC libsndfile/include)
+
+add_subdirectory(src)
+
+add_executable(extract extract.cpp)
+target_link_libraries(extract resources)
