@@ -14,3 +14,21 @@ set(CMAKE_CXX_EXTENSIONS ON)
 set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
 
 add_executable(extract extract.cpp)
+
+# Add the compiler's library and include paths to CMake search paths
+set(CMAKE_LIBRARY_PATH "${CMAKE_LIBRARY_PATH};${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES}")
+set(CMAKE_INCLUDE_PATH "${CMAKE_INCLUDE_PATH};${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES}")
+set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
+
+# Find FFTW using the extended search paths
+find_library(FFTW_LIB fftw3)
+find_path(FFTW_INCLUDE_DIR fftw3.h)
+
+if(FFTW_LIB AND FFTW_INCLUDE_DIR)
+    message(STATUS "Found FFTW library: ${FFTW_LIB}")
+    message(STATUS "Found FFTW include directory: ${FFTW_INCLUDE_DIR}")
+else()
+    message(FATAL_ERROR "FFTW was not found on your system!")
+endif()
+
+target_link_libraries(extract PUBLIC ${FFTW_LIB})
