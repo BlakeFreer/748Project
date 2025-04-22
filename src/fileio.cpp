@@ -1,12 +1,15 @@
-#include "csv.hpp"
+#include "fileio.hpp"
 
 #include <cassert>
 #include <cmath>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <vector>
 
-void SaveCSV(std::filesystem::path filename, const Eigen::ArrayXXd& array,
+namespace fs = std::filesystem;
+
+void SaveCSV(fs::path filename, const Eigen::ArrayXXd& array,
              std::vector<std::string> header, std::string delimiter,
              int precision) {
     std::ofstream of(filename);
@@ -57,8 +60,7 @@ std::string trim_token(const std::string& s) {
 }
 }  // namespace
 
-Eigen::ArrayXXd LoadCSV(std::filesystem::path filename, int skip_lines,
-                        char delimiter) {
+Eigen::ArrayXXd LoadCSV(fs::path filename, int skip_lines, char delimiter) {
     std::ifstream file(filename);
 
     if (!file.is_open()) {
@@ -114,4 +116,43 @@ Eigen::ArrayXXd LoadCSV(std::filesystem::path filename, int skip_lines,
         }
     }
     return table;
+}
+
+static std::string StripQuotes(std::string s) {
+    if (s.size() < 2) {
+        return s;
+    }
+
+    if ((s.front() == '"' && s.back() == '"') ||
+        (s.front() == '\'' && s.back() == '\'')) {
+        return s.substr(1, s.size() - 2);
+    }
+
+    return s;
+}
+
+std::vector<fs::path> ReadFileListing(fs::path list_txt) {
+    if (!fs::exists(list_txt)) {
+        std::cerr << list_txt << " does not exist." << std::endl;
+    }
+
+    std::vector<fs::path> feature_files;
+
+    std::string read_buffer;
+    std::ifstream file(list_txt);
+    int line_no = 1;
+    while (std::getline(file, read_buffer)) {
+        fs::path file(StripQuotes(read_buffer));
+
+        if (!fs::exists(file)) {
+            std::cerr << "Could not find " << file << " (line #" << line_no
+                      << ")." << std::endl;
+            exit(1);
+        }
+
+        feature_files.push_back(fs::path(file));
+
+        line_no++;
+    }
+    return feature_files;
 }

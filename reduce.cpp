@@ -2,14 +2,11 @@
 
 #include <Eigen/Core>
 #include <filesystem>
-#include <fstream>
 #include <iostream>
 
-#include "csv.hpp"
+#include "fileio.hpp"
 
 namespace fs = std::filesystem;
-
-std::vector<fs::path> GetFeatureFiles(fs::path list_txt);
 
 struct Args {
     std::vector<fs::path> feature_files;
@@ -25,7 +22,7 @@ struct Args {
             exit(2);
         }
 
-        feature_files = GetFeatureFiles(argv[1]);
+        feature_files = ReadFileListing(argv[1]);
         basis_file = fs::path(argv[2]).replace_extension(".basis");
         mean_file = fs::path(argv[2]).replace_extension(".mean");
         dims = std::stoi(argv[3]);
@@ -66,49 +63,14 @@ int main(int argc, char* argv[]) {
         Eigen::VectorXd reduced =
             basis.rightCols(args.dims).transpose() * (feature - mean);
 
+        // basis has largest eigenvalues on right. reverse so most important dim
+        // is first
+        reduced.reverseInPlace();
+
         fs::path reduced_file = f;
         reduced_file.replace_extension(".reduced");
         SaveCSV(reduced_file, reduced);
         std::cout << reduced_file << std::endl;
     }
     return 0;
-}
-
-std::string StripQuotes(std::string s) {
-    if (s.size() < 2) {
-        return s;
-    }
-
-    if ((s.front() == '"' && s.back() == '"') ||
-        (s.front() == '\'' && s.back() == '\'')) {
-        return s.substr(1, s.size() - 2);
-    }
-
-    return s;
-}
-
-std::vector<fs::path> GetFeatureFiles(fs::path list_txt) {
-    if (!fs::exists(list_txt)) {
-        std::cerr << list_txt << " does not exist." << std::endl;
-    }
-
-    std::vector<fs::path> feature_files;
-
-    std::string read_buffer;
-    std::ifstream file(list_txt);
-    int line_no = 1;
-    while (std::getline(file, read_buffer)) {
-        fs::path file(StripQuotes(read_buffer));
-
-        if (!fs::exists(file)) {
-            std::cerr << "Could not find " << file << " (line #" << line_no
-                      << ")." << std::endl;
-            exit(1);
-        }
-
-        feature_files.push_back(fs::path(file));
-
-        line_no++;
-    }
-    return feature_files;
 }

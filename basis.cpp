@@ -1,16 +1,13 @@
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
 #include <filesystem>
-#include <fstream>
 #include <iostream>
 #include <vector>
 
-#include "csv.hpp"
+#include "fileio.hpp"
 #include "reduce.hpp"
 
 namespace fs = std::filesystem;
-
-std::vector<fs::path> GetFeatureFiles(fs::path list_txt);
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -19,7 +16,7 @@ int main(int argc, char* argv[]) {
     }
 
     fs::path infile(argv[1]);
-    std::vector<fs::path> feature_files = GetFeatureFiles(infile);
+    std::vector<fs::path> feature_files = ReadFileListing(infile);
 
     /***************************************************************
         Load features
@@ -79,43 +76,4 @@ int main(int argc, char* argv[]) {
     mean_file.replace_extension(".mean");
     SaveCSV(mean_file, mean);
     std::cout << mean_file << std::endl;
-}
-
-std::string StripQuotes(std::string s) {
-    if (s.size() < 2) {
-        return s;
-    }
-
-    if ((s.front() == '"' && s.back() == '"') ||
-        (s.front() == '\'' && s.back() == '\'')) {
-        return s.substr(1, s.size() - 2);
-    }
-
-    return s;
-}
-
-std::vector<fs::path> GetFeatureFiles(fs::path list_txt) {
-    if (!fs::exists(list_txt)) {
-        std::cerr << list_txt << " does not exist." << std::endl;
-    }
-
-    std::vector<fs::path> feature_files;
-
-    std::string read_buffer;
-    std::ifstream file(list_txt);
-    int line_no = 1;
-    while (std::getline(file, read_buffer)) {
-        fs::path file(StripQuotes(read_buffer));
-
-        if (!fs::exists(file)) {
-            std::cerr << "Could not find " << file << " (line #" << line_no
-                      << ")." << std::endl;
-            exit(1);
-        }
-
-        feature_files.push_back(fs::path(file));
-
-        line_no++;
-    }
-    return feature_files;
 }

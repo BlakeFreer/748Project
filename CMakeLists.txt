@@ -49,3 +49,6 @@ target_link_libraries(basis resources)
 
 add_executable(reduce reduce.cpp)
 target_link_libraries(reduce resources)
+
+add_executable(prep-svm prep_svm.cpp)
+target_link_libraries(prep-svm resources)

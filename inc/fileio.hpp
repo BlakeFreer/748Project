@@ -10,3 +10,6 @@ void SaveCSV(std::filesystem::path filename, const Eigen::ArrayXXd& array,
 
 Eigen::ArrayXXd LoadCSV(std::filesystem::path filename, int skip_lines = 0,
                         char delimiter = ',');
+
+std::vector<std::filesystem::path> ReadFileListing(
+    std::filesystem::path list_txt);
