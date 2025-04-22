@@ -17,3 +17,13 @@ mkdir build; cd build
 cmake .. -G'Unix Makefiles'
 cmake --build .
 ```
+
+# Usage
+
+## Extract
+
+Extract a feature vector from a wav file.
+
+```bash
+for f in training/*.wav; do ./build/extract "$f"; done
+```

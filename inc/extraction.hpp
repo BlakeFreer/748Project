@@ -12,4 +12,4 @@ constexpr double mel2hz(double mel);
 Eigen::ArrayXXd CreateMelFilterbanks(int num_filters, double sample_rate,
                                      int nfft, double lowfreq, double highfreq);
 
-Eigen::ArrayXd ExtractFeature(AudioFile aud);
+Eigen::ArrayXXd ExtractFeature(AudioFile aud);

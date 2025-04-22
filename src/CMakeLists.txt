@@ -1,5 +1,5 @@
 target_sources(resources
-    PUBLIC
+    PRIVATE
     audio.cpp
     csv.cpp
     extraction.cpp

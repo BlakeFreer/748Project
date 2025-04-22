@@ -4,24 +4,28 @@
 
 #include <Eigen/Core>
 #include <cmath>
-#include <iostream>
 
 #include "audio.hpp"
-#include "csv.hpp"
 #include "window.hpp"
 
 // Rows are bins, columns are frames
-Eigen::ArrayXXcd STFT(const AudioFile aud, int fftn, int hop) {
+Eigen::ArrayXXcd STFT(Eigen::ArrayXd signal, int fftn, int hop) {
     // Pad audio to align with window and hop
-    int num_frames = (aud.data.size() - fftn + hop) / hop;
-    int padding = fftn + hop * (num_frames - 1) - aud.data.size();
+    int num_frames = (signal.size() - fftn + hop - 1) / hop + 1;
+    int padding = fftn + hop * (num_frames - 1) - signal.size();
 
-    assert(0 <= padding < hop);
+    // std::cout << "num_frames: " << num_frames << std::endl;
+    // std::cout << "signal.size(): " << signal.size() << std::endl;
+    // std::cout << "fftn: " << fftn << std::endl;
+    // std::cout << "hop: " << hop << std::endl;
+    // std::cout << "padding: " << padding << std::endl;
 
-    Eigen::ArrayXd audio = aud.data;  // make a copy to modify
+    assert(0 <= padding);
+    assert(padding < hop);
+
     if (padding > 0) {
-        audio.conservativeResize(audio.size() + padding);
-        for (auto& x : audio.tail(padding)) {
+        signal.conservativeResize(signal.size() + padding);
+        for (auto& x : signal.tail(padding)) {
             x = 0;
         }
     }  // else no padding is needed (hops and window align perfectly)
@@ -34,7 +38,7 @@ Eigen::ArrayXXcd STFT(const AudioFile aud, int fftn, int hop) {
 
     fftw_plan fft;
     for (int i = 0; i < num_frames; i++) {
-        Eigen::ArrayXd sample = audio(Eigen::seqN(i * hop, fftn));
+        Eigen::ArrayXd sample = signal(Eigen::seqN(i * hop, fftn));
         Eigen::ArrayXd windowed_sample = window * sample;
 
         fft = fftw_plan_dft_r2c_1d(
@@ -80,10 +84,10 @@ Eigen::ArrayXXd CreateMelFilterbanks(int num_filters, double sample_rate,
         for (int i = 0; i < nbins; i++) {
             double f = fft_freqs[i];
 
-            if (f_low <= f <= f_center) {
+            if (f_low <= f && f <= f_center) {
                 filters(j - 1, i) = (f - f_low) / (f_center - f_low);
-            } else if (f_center <= f <= f_high) {
-                filters(j - 1, i) = (f - f_high) / (f_high - f_center);
+            } else if (f_center <= f && f <= f_high) {
+                filters(j - 1, i) = (f_high - f) / (f_high - f_center);
             } else {
                 continue;  // these cells are already 0
             }
@@ -92,74 +96,81 @@ Eigen::ArrayXXd CreateMelFilterbanks(int num_filters, double sample_rate,
     return filters;
 }
 
-Eigen::ArrayXd ExtractFeature(AudioFile aud) {
-    // This window size and hop is recommended by Fine et al.
-    const float kStepSec = 0.01;
-    const float kWindowSec = 0.025;
-    int hop = aud.sample_rate * kStepSec;
-    int fftn = aud.sample_rate * kWindowSec;
+Eigen::ArrayXXd ExtractFeature(AudioFile aud) {
+    /***************************************************************
+        Normalize Amplitude
+    ***************************************************************/
+    double max_amplitude = aud.data.abs().maxCoeff();
+    assert(max_amplitude > 0);
+    Eigen::ArrayXd audio = aud.data / max_amplitude;
 
-    Eigen::ArrayXXcd stft = STFT(aud, fftn, hop);
-    Eigen::ArrayXXd power_spectrum = stft.abs().pow(2);
+    /***************************************************************
+        Power Spectrum
+    ***************************************************************/
+    // Window size and hop is recommended by Fine et al.
+    const double kStepSec = 0.01;
+    const double kWindowSec = 0.025;
+    int hop = kStepSec * aud.sample_rate;
+    int fftn = kWindowSec * aud.sample_rate;
 
-    SaveCSV("power.csv", power_spectrum);
+    Eigen::ArrayXXd power_spectrum = STFT(audio, fftn, hop).abs2();
+    // SaveCSV("power.csv", power_spectrum);
 
-    assert(!power_spectrum.isNaN().any());
-
-    // from Ganchev
+    /***************************************************************
+     Mel Filterbank
+     ***************************************************************/
+    // values from Ganchev
     const int kNumFilters = 24;
     const double lowfreq = 0;
     const double highfreq = 4000;
-
     Eigen::ArrayXXd mel_filterbanks = CreateMelFilterbanks(
         kNumFilters, aud.sample_rate, fftn, lowfreq, highfreq);
 
-    // Apply the filterbank to each frame of the STFT to get kNumFilters data
-    // points per frame
-
     assert(mel_filterbanks.cols() == power_spectrum.rows());
+
+    // Computes kNumFilters datapoints per frame.
     Eigen::ArrayXXd filtered_power(kNumFilters, power_spectrum.cols());
 
     for (int j = 0; j < kNumFilters; j++) {
+        Eigen::ArrayXd filter = mel_filterbanks.row(j);
         for (int i = 0; i < power_spectrum.cols(); i++) {
-            Eigen::ArrayXd filter = mel_filterbanks.row(j);
             filtered_power(j, i) = (power_spectrum.col(i) * filter).sum();
         }
     }
+    // SaveCSV("mel_power_binned.csv", filtered_power);
 
-    assert(!filtered_power.isNaN().any());
-    filtered_power = filtered_power.log10();
-    assert(!filtered_power.isNaN().any());
+    /***************************************************************
+        Pool to reduce time resolution
+    ***************************************************************/
+    // Adjust kNumFilters to change the frequency resolution
 
-    // Pool the columns to reduce time resolution
-    // (Adjust kNumFilters to change the frequency resolution)
-
-    const int kNumPeriods = 8;  // independent of duration so that all features
-                                // have same dimensionality.
+    // independent of duration so that all features have same dimensionality.
+    const int kNumPeriods = 8;
 
     double breaks = static_cast<double>(filtered_power.cols()) / kNumPeriods;
 
-    std::cout << "File is " << aud.data.size() / float(aud.sample_rate)
-              << " sec long" << std::endl;
-    std::cout << "There are " << stft.cols() << " frames" << std::endl;
-
-    Eigen::ArrayXXd pooled(kNumFilters, kNumPeriods);
+    Eigen::ArrayXXd pooled_power(kNumFilters, kNumPeriods);
     for (int i = 0; i < kNumPeriods; i++) {
         int low_i = std::round(i * breaks);
         int high_i = std::round((i + 1) * breaks);
-        std::cout << low_i << "\t" << high_i << std::endl;
         auto seq = Eigen::seq(low_i, high_i - 1);
+
         for (int j = 0; j < kNumFilters; j++) {
-            pooled(j, i) = filtered_power.row(j)(seq).mean();
+            pooled_power(j, i) = filtered_power.row(j)(seq).mean();
             filtered_power.row(j)(seq) = NAN;
         }
     }
 
     // Check used all elements exactly once
     assert(filtered_power.isNaN().all());
-    // assert(!(pooled.isNaN()).any());
+    assert(!(pooled_power.isNaN()).any());
 
-    pooled.resize(pooled.size(), 1);
+    /***************************************************************
+        Take log10 of pooled_power power
+    ***************************************************************/
+    const double epsilon = 1e-8;  // to avoid log(0)
+    Eigen::ArrayXXd pooled = (pooled_power + epsilon).log10();
+    assert(!pooled.isNaN().any());
 
     return pooled;
 }

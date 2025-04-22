@@ -8,7 +8,7 @@ enable_language(C CXX)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
@@ -35,7 +35,7 @@ endif()
 target_link_libraries(resources PUBLIC ${FFTW_LIB})
 
 # libsndfile
-find_library(LIBSNDFILE NAMES libsndfile PATHS libsndfile/build)
+find_library(LIBSNDFILE NAMES sndfile PATHS libsndfile/build)
 target_link_libraries(resources PUBLIC ${LIBSNDFILE})
 target_include_directories(resources PUBLIC libsndfile/include)
 
