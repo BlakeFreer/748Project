@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <format>
+#include <iostream>
 
 #include "sndfile.hh"
 
@@ -23,10 +24,20 @@ AudioFile::AudioFile(std::string filename) {
     size_t num_chn = f.channels();
     size_t num_frames = f.frames();
 
+    if (num_chn > 1) {
+        std::cout << std::format(
+                         "{} has more than 1 channel. Only the first "
+                         "will be kept.",
+                         filename)
+                  << std::endl;
+    }
+
     sample_rate = f.samplerate();
     double* buffer = new double[num_chn * num_frames]();
     f.readf(buffer, num_frames);
 
-    data = Eigen::Map<Eigen::ArrayXXd>(buffer, num_chn, num_frames);
-    data.transposeInPlace();
+    Eigen::ArrayXXd all_channels =
+        Eigen::Map<Eigen::ArrayXXd>(buffer, num_chn, num_frames);
+
+    data = all_channels.row(0);
 }

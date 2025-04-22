@@ -14,6 +14,7 @@ set(CMAKE_CXX_EXTENSIONS ON)
 set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
 
 add_library(resources)
+target_include_directories(resources PUBLIC inc)
 
 # Add the compiler's library and include paths to CMake search paths
 set(CMAKE_LIBRARY_PATH "${CMAKE_LIBRARY_PATH};${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES}")

@@ -4,7 +4,7 @@
 
 struct AudioFile {
     int sample_rate;
-    Eigen::ArrayXXd data;
+    Eigen::ArrayXd data;
 
     AudioFile(std::string filename);
 };
