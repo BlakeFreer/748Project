@@ -43,3 +43,9 @@ add_subdirectory(src)
 
 add_executable(extract extract.cpp)
 target_link_libraries(extract resources)
+
+add_executable(basis basis.cpp)
+target_link_libraries(basis resources)
+
+add_executable(reduce reduce.cpp)
+target_link_libraries(reduce resources)

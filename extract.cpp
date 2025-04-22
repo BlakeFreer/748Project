@@ -7,7 +7,7 @@
 namespace fs = std::filesystem;
 
 int main(int argc, char* argv[]) {
-    if (argc < 2) {
+    if (argc != 2) {
         std::cerr << "Usage: ./extract <filename>" << std::endl;
         exit(2);
     }

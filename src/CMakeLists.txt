@@ -3,5 +3,6 @@ target_sources(resources
     audio.cpp
     csv.cpp
     extraction.cpp
+    reduce.cpp
     window.cpp
 )

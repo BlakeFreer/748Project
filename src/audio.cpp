@@ -1,8 +1,8 @@
 #include "audio.hpp"
 
 #include <filesystem>
-#include <format>
 #include <iostream>
+#include <sstream>
 
 #include "sndfile.hh"
 
@@ -10,25 +10,21 @@ AudioFile::AudioFile(std::string filename) {
     namespace fs = std::filesystem;
 
     if (!fs::exists(filename)) {
-        auto msg = std::format("Audio file {} does not exist.",
-                               fs::absolute(filename).string());
-        throw std::runtime_error(msg);
+        throw std::runtime_error("Audio file " + filename + " does not exist.");
     }
 
     SndfileHandle f(filename);
     if (f.error()) {
-        auto msg = std::format("Failed to open {}.", filename);
-        throw std::runtime_error(msg);
+        throw std::runtime_error("Failed to open " + filename + ".");
     }
 
     size_t num_chn = f.channels();
     size_t num_frames = f.frames();
 
     if (num_chn > 1) {
-        std::cout << std::format(
-                         "{} has more than 1 channel. Only the first "
-                         "will be kept.",
-                         filename)
+        std::cout << filename
+                  << " has more than 1 channel. Only the first "
+                     "will be kept."
                   << std::endl;
     }
 

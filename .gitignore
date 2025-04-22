@@ -3,3 +3,7 @@
 build
 .cache
 .clangd
+*.basis
+*.scree
+*.mean
+*.txt

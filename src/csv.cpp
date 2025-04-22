@@ -3,7 +3,6 @@
 #include <cassert>
 #include <cmath>
 #include <filesystem>
-#include <format>
 #include <fstream>
 #include <vector>
 
@@ -19,11 +18,10 @@ void SaveCSV(std::filesystem::path filename, const Eigen::ArrayXXd& array,
 
     if (!header.empty()) {
         if (header.size() != array.cols()) {
-            std::string err = std::format(
-                "Header length ({}) does not match number of columns in data "
-                "({}).",
-                header.size(), array.cols());
-            throw std::invalid_argument(err);
+            throw std::invalid_argument(
+                "Header length (" + std::to_string(header.size()) +
+                ") does not match number of columns in data (" +
+                std::to_string(array.cols()) + ").");
         }
         for (int i = 0; i < header.size(); i++) {
             of << header[i];
@@ -84,14 +82,15 @@ Eigen::ArrayXXd LoadCSV(std::filesystem::path filename, int skip_lines,
             try {
                 row.push_back(std::stod(trim_token(token)));
             } catch (const std::invalid_argument& e) {
-                std::string err_msg = std::format(
-                    "Invalid value '{}' in line {} of {}. {}({})", token,
-                    line_no + 1, filename.string(),
-                    (line_no == 0) ? " Did you mean to pass skip_lines=1 to "
-                                     "skip the header? "
-                                   : "",
-                    e.what());
-                throw std::invalid_argument(err_msg);
+                std::ostringstream err_msg;
+                err_msg << "Invalid value '" << token << "' in line "
+                        << (line_no + 1) << " of " << filename.string() << ".";
+                if (line_no == 0) {
+                    err_msg << " Did you mean to pass skip_lines=1 to skip the "
+                               "header?";
+                }
+                err_msg << " (" << e.what() << ")";
+                throw std::invalid_argument(err_msg.str());
             }
         }
         data.push_back(row);
