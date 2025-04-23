@@ -52,4 +52,38 @@
   \end{figure}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Classification Results}
+  Partitioned data 80\% training, 20\% test with equal mix among all speakers.
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{img/run30.png}
+  \end{figure}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Classification Results}
+  Training on 5 speakers, testing on the other.
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.32\textwidth]{img/jackson.png}
+    \includegraphics[width=0.32\textwidth]{img/theo.png}
+    \includegraphics[width=0.32\textwidth]{img/george.png}
+  \end{figure}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Dataset Segmentation}
+  Speakers were not consistent in their segmentation.
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.35\textwidth]{img/george_5.png}
+    \hfill
+    \includegraphics[width=0.5\textwidth]{img/lucas_5.png}
+  \end{figure}
+
+  Model is highly time-sensitive since features are extracted in time.
+\end{frame}
+
 \end{document}
