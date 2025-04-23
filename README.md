@@ -1,9 +1,12 @@
-# Installation
+# Spoken Digit Recognition
 
-Must have Eigen and FFTW3 installed globally.
+## Installation
+
+Must have Eigen, FFTW3, CMake, and Python3 installed globally.
 
 ```bash
 git submodule update --init --recursive
+python3 -m pip install -r requirements.txt
 
 # Build libsndfile
 pushd third-party/libsndfile
@@ -12,52 +15,49 @@ cmake .. -G'Unix Makefiles'
 cmake --build . --parallel
 popd
 
-# Build the project. Must use g++ compiler (not c++)
+# Build my project.
 mkdir build; cd build
 cmake .. -G'Unix Makefiles'
 cmake --build .
 ```
 
-# Usage
+## Usage
 
-## Extract
-
-Extract a feature vector from a wav file.
+### 1. Partition training and testing data
 
 ```bash
-$ rm training_features.txt
-$ for f in training/*.wav; do ./build/extract "$f" >> training_features.txt; done
-"training/0_george_0.feat"
-"training/0_george_1.feat"
-"training/0_george_10.feat"
-"training/0_george_11.feat"
-"training/0_george_12.feat"
-...
+$ python3 partition.py example
+Found 3000 audio files in free-spoken-digit-dataset/recordings.
+Copied 2400 training files to example/train_data.
+Copied 600 testing files to example/test_data.
 ```
 
-## Compute Basis
+`example` is the name of the folder which holds this dataset.
 
-Pass a file listing the the `.feat` files from `./extract`.
+The Free Spoken Digit Dataset contains 3000 recordings: 6 speakers with 50 recordings for digits 0-9.
+
+By default, `partition.py` will use 40 recordings from each speaker and digit for training and the remaining 10 recordings for testing.
+
+You can change the partitioning scheme by passing a regex search string with the `--regex` flag. Any filename containing this regex will be used for testing while all others will be used for training.
+
+For example, to test on the "Theo" recordings and train on all others, partition with
 
 ```bash
-$ ./build/basis training_features.txt
-"training_features.scree"
-"training_features.basis"
-"training_features.mean"
+python3 partition.py example2 --regex theo
 ```
 
-## Reduce Dimensions
-
-Use the precomputed mean and basis to reduce the dimensions of feature.
+### 2. Run the classifier
 
 ```bash
-./build/reduce training_features.txt training_features 12
-"training/0_george_0.reduced"
-"training/0_george_1.reduced"
-"training/0_george_10.reduced"
-"training/0_george_11.reduced"
-"training/0_george_12.reduced"
-...
+source pipeline.sh example
 ```
 
-The last argument chooses how many dimensions to keep. Use the `training_features.scree` file to decide.
+Where `example` is the name of the partition folder. Some steps in the script take up to a minute so be patient.
+
+### 3. Plot the results
+
+```bash
+python3 plot.py example
+```
+
+Plots the confusion matrix and PCA scree plot for the `example` folder.

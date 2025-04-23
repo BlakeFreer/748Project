@@ -16,7 +16,7 @@ def parse():
         "--regex",
         type=str,
         help="Regex to select testing data files.",
-        default=r"3\d\.wav",
+        default=r"4\d\.wav",
     )
 
     args = p.parse_args(None if sys.argv[1:] else ["-h"])
