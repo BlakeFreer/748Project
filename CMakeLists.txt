@@ -54,5 +54,3 @@ target_link_libraries(reduce resources)
 add_executable(prep-svm prep_svm.cpp)
 target_link_libraries(prep-svm resources)
 
-add_executable(img img.cpp)
-target_link_libraries(img resources)
