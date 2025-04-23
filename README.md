@@ -6,13 +6,13 @@ Must have Eigen and FFTW3 installed globally.
 git submodule update --init --recursive
 
 # Build libsndfile
-cd libsndfile
+pushd third-party/libsndfile
 mkdir build; cd build
 cmake .. -G'Unix Makefiles'
-cmake --build .
-cd ../../
+cmake --build . --parallel
+popd
 
-# Build the project
+# Build the project.
 mkdir build; cd build
 cmake .. -G'Unix Makefiles'
 cmake --build .
