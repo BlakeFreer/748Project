@@ -25,7 +25,7 @@ echo "Reducing dimensionality."
 
 echo "Training SVM."
 ./build/prep-svm $out/train.reduced
-./libsvm/svm-train $out/train.svm $out/model > /dev/null
+./third-party/libsvm/svm-train $out/train.svm $out/model > /dev/null
 
 echo "Extracting features from test data."
 for f in $test/*.wav; do ./build/extract "$f" >> $out/test.txt; done
@@ -35,4 +35,4 @@ echo "Projecting test data onto basis."
 
 echo "Predicting with SVM."
 ./build/prep-svm $out/test.reduced
-./libsvm/svm-predict $out/test.svm $out/model $out/confusion.txt
+./third-party/libsvm/svm-predict $out/test.svm $out/model $out/confusion.txt

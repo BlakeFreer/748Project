@@ -35,9 +35,9 @@ endif()
 target_link_libraries(resources PUBLIC ${FFTW_LIB})
 
 # libsndfile
-find_library(LIBSNDFILE NAMES sndfile PATHS libsndfile/build)
+find_library(LIBSNDFILE NAMES sndfile PATHS third-party/libsndfile/build)
 target_link_libraries(resources PUBLIC ${LIBSNDFILE})
-target_include_directories(resources PUBLIC libsndfile/include)
+target_include_directories(resources PUBLIC third-party/libsndfile/include)
 
 add_subdirectory(src)
 

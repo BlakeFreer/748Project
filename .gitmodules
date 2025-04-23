@@ -2,8 +2,11 @@
 	path = free-spoken-digit-dataset
 	url = https://github.com/Jakobovski/free-spoken-digit-dataset.git
 [submodule "libsndfile"]
-	path = libsndfile
+	path = third-party/libsndfile
 	url = https://github.com/libsndfile/libsndfile.git
 [submodule "libsvm"]
-	path = libsvm
+	path = third-party/libsvm
 	url = https://github.com/cjlin1/libsvm.git
+[submodule "stb"]
+	path = third-party/stb
+	url = https://github.com/nothings/stb.git
