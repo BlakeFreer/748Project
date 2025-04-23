@@ -5,7 +5,7 @@
 Must have Eigen, FFTW3, CMake, and Python3 installed globally.
 
 ```bash
-git submodule update --init --recursive
+git clone https://github.com/BlakeFreer/748Project.git --recurse-submodules
 python3 -m pip install -r requirements.txt
 
 # Build libsndfile
@@ -15,7 +15,7 @@ cmake .. -G'Unix Makefiles'
 cmake --build . --parallel
 popd
 
-# Build my project.
+# Build my project
 mkdir build; cd build
 cmake .. -G'Unix Makefiles'
 cmake --build .
