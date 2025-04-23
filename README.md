@@ -12,7 +12,7 @@ cmake .. -G'Unix Makefiles'
 cmake --build . --parallel
 popd
 
-# Build the project.
+# Build the project. Must use g++ compiler (not c++)
 mkdir build; cd build
 cmake .. -G'Unix Makefiles'
 cmake --build .

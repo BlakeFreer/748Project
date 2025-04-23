@@ -13,3 +13,6 @@ Eigen::ArrayXXd LoadCSV(std::filesystem::path filename, int skip_lines = 0,
 
 std::vector<std::filesystem::path> ReadFileListing(
     std::filesystem::path list_txt);
+
+void SaveImage(std::filesystem::path filename, Eigen::ArrayXXd values,
+               double min, double max);

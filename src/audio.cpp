@@ -2,7 +2,6 @@
 
 #include <filesystem>
 #include <iostream>
-#include <sstream>
 
 #include "sndfile.hh"
 

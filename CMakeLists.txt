@@ -34,7 +34,8 @@ endif()
 
 target_link_libraries(resources PUBLIC ${FFTW_LIB})
 
-# libsndfile
+target_include_directories(resources PUBLIC third-party/stb)
+
 find_library(LIBSNDFILE NAMES sndfile PATHS third-party/libsndfile/build)
 target_link_libraries(resources PUBLIC ${LIBSNDFILE})
 target_include_directories(resources PUBLIC third-party/libsndfile/include)
@@ -52,3 +53,6 @@ target_link_libraries(reduce resources)
 
 add_executable(prep-svm prep_svm.cpp)
 target_link_libraries(prep-svm resources)
+
+add_executable(img img.cpp)
+target_link_libraries(img resources)

@@ -5,7 +5,13 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 #include <vector>
+
+#include "colour.hpp"
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 namespace fs = std::filesystem;
 
@@ -155,4 +161,34 @@ std::vector<fs::path> ReadFileListing(fs::path list_txt) {
         line_no++;
     }
     return feature_files;
+}
+
+void SaveImage(std::filesystem::path filename, Eigen::ArrayXXd values,
+               double min, double max) {
+    if (filename.extension() != ".png") {
+        throw std::runtime_error("Only .png files are supported, not " +
+                                 filename.extension().string());
+    }
+
+    auto palette = colour::sunset;
+    palette.Rescale(min, max);
+
+    int rows = values.rows();
+    int cols = values.cols();
+
+    uint8_t* image_buffer = new uint8_t[cols * rows * 3];
+    for (int sp = 0; sp < cols; sp++) {
+        for (int i = 0; i < rows; i++) {
+            int idx = ((rows - 1 - i) * cols + sp) * 3;
+
+            auto col = palette.Get(values(i, sp));
+
+            image_buffer[idx] = col.red;
+            image_buffer[idx + 1] = col.green;
+            image_buffer[idx + 2] = col.blue;
+        }
+    }
+
+    stbi_write_png(filename.string().c_str(), cols, rows, 3, image_buffer,
+                   cols * 3);
 }
